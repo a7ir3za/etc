@@ -1,0 +1,24 @@
+ipfw -f flush
+
+ipfw add 1001 fwd 127.0.0.1,3128 tcp from any to me dst-port 3128 setup keep-state
+ipfw add 1002 fwd 127.0.0.1,22 tcp from any to me dst-port 21471 setup keep-state
+ipfw add 1003 allow all from any to any via em0
+ipfw add 1007 allow all from any to any via lo0
+ipfw add 1009 allow udp from any to me dst-port 514 in via em1
+
+ipfw add 1097 divert natd ip from any to any in via em1
+ipfw add 1101 check-state
+
+ipfw add 2120 skipto 5000 tcp from any to any out via em1 setup keep-state
+ipfw add 2125 skipto 5000 udp from any to any out via em1 keep-state
+ipfw add 2130 skipto 5000 icmp from any to any out via em1 keep-state
+ipfw add 2201 skipto 5000 tcp from any to any 32194 in via em1 setup keep-state
+ipfw add 2201 skipto 5000 tcp from any to any 27891 in via em1 setup keep-state
+ipfw add 2203 skipto 5000 tcp from any to any 51413 in via em1 setup keep-state
+ipfw add 2204 skipto 5000 udp from any to any 51413 in via em1 keep-state
+
+ipfw add 4499 deny log all from any to any
+
+ipfw add 5000 divert natd ip from any to any out via em1
+ipfw add 6901 allow all from any to any
+
