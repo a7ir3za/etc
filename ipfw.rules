@@ -1,0 +1,39 @@
+ipfw -f flush
+
+ipfw pipe 1 config bw 16kb/s
+ipfw queue 1 config pipe 1 mask src-ip 0xffffffff
+ipfw add 22 queue 1 tcp from any to any dst-port 27022 in via em0 
+ipfw add 22 queue 1 tcp from any to any dst-port 31022 in via em0
+
+ipfw add 1000 fwd 172.16.0.27 tcp from any to me limit src-addr 1 dst-port 27022 in via em0 setup
+ipfw add 1000 fwd 127.0.0.1,22 tcp from any to me limit src-addr 1 dst-port 31022 in via em0 setup
+ipfw add 1001 fwd 127.0.0.1,3128 tcp from any to me dst-port 3128 in via em0 setup keep-state
+
+#--- 10.1.1.29 Local & Remote fixups
+ipfw add 1024 fwd 127.0.0.1,143 tcp from any to me dst-port 50143 setup keep-state
+ipfw add 1024 fwd 127.0.0.1,993 tcp from any to me dst-port 50993 setup keep-state
+ipfw add 1025 fwd 127.0.0.1,25 tcp from any to me dst-port 50025 setup keep-state
+ipfw add 1025 fwd 127.0.0.1,465 tcp from any to me dst-port 50465 setup keep-state
+#---
+
+ipfw add 1091 allow all from any to any via lo0
+ipfw add 1093 allow all from any to any via em1
+ipfw add 1099 allow udp from any to me dst-port 514 in via em0
+
+ipfw add 1101 divert natd ip from any to any in via em0
+ipfw add 1191 check-state
+
+ipfw add 2120 skipto 5000 tcp from any to any out via em0 setup keep-state
+ipfw add 2125 skipto 5000 udp from any to any out via em0 keep-state
+ipfw add 2130 skipto 5000 icmp from any to any out via em0 keep-state
+ipfw add 2201 skipto 5000 tcp from any to any 32194 in via em0 setup keep-state
+ipfw add 2201 skipto 5000 tcp from any to any 27891 in via em0 setup keep-state
+ipfw add 2203 skipto 5000 tcp from any to any 51413 in via em0 setup keep-state
+ipfw add 2204 skipto 5000 udp from any to any 51413 in via em0 keep-state
+
+ipfw add 4499 deny log all from any to any
+
+ipfw add 5000 divert natd ip from any to any out via em0
+ipfw add 6901 allow all from any to any
+
+##---
